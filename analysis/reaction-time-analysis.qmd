@@ -1,0 +1,467 @@
+---
+title: "\\textbf{\\fontsize{14pt}{14pt}\\selectfont Linear Mixed Model Analysis: Uneven Effects of Distraction Levels on Reaction Times}"
+author: "Shihan Wang"
+date: "2024-12-02"
+format: 
+  pdf:
+    documentclass: article
+    fontsize: 12pt
+    mainfont: "Times New Roman"
+    geometry: margin=1in
+editor: visual
+---
+
+## Abstract
+
+Distraction significantly impacts human cognitive performance, especially in tasks requiring rapid and accurate responses. This study investigates the effect of **distraction levels** on **reaction times** using a **Linear Mixed Model (LMM)**. Twenty-eight participants performed a response time test under **four** **distraction levels**: **standing in a distraction-free space**, **standing in a bustling area**, **walking in a distraction-free space**,and **walking briskly in a bustling area**. Each participant completed the test four times under each condition, providing a robust dataset for analysis. The results demonstrate that distraction levels significantly influence reaction times, with the most demanding conditions, such as walking briskly in a bustling area, leading to the longest reaction times. Variability in reaction times also differed across distraction levels, necessitating the inclusion of heteroscedasticity in the model to improve fit and accuracy. Secondary analysis explored the effect of **noise level** and its interaction with distraction levels. While noise level independently influenced reaction times, the interaction between distraction levels and noise was not statistically significant, suggesting a consistent effect of noise across distraction conditions. These findings emphasize the importance of accounting for both individual differences and environmental variability in cognitive performance research. Practical implications include designing environments and tasks that minimize distractions to improve reaction speed in safety-critical situations.
+
+```{r,echo=FALSE,warning=FALSE,include=FALSE}
+library(tidyverse)
+library(janitor)
+library(nlme)
+library(dplyr)
+library(ggplot2)
+library(lattice)
+library(rstatix)
+```
+
+## 1. Introduction
+
+The assessment and prediction of cognitive performance are essential for understanding human behavior, particularly in safety-critical contexts where rapid and accurate responses are crucial (Dehais et al., 2020). While mental workload has been a primary focus in this area, operationalizing this construct remains a significant challenge (Dehais et al., 2020). Advances in Neuroergonomics have provided valuable insights into how neurocognitive processes operate under varying conditions. However, the influence of external distractions on cognitive performance remains an area requiring further exploration.
+
+Reaction time, a fundamental indicator of cognitive efficiency, is critical for navigating complex environments and tasks (Cummings, n.d.). Whether driving, playing sports, or engaging in conversations, the ability to respond quickly and effectively is vital (Cummings, n.d.). This study is motivated by the need to investigate how different distraction levels impact reaction time, providing insights into the interplay between environmental conditions and human responsiveness. Specifically, this study examines reaction times across four reaction levels: **standing in a distraction-free space**, **standing in a bustling area**, **walking in a distraction-free space**, and **walking briskly in a bustling area**.
+
+The primary question guiding this study is: **How do different distraction levels impact reaction times?** Secondary research questions include: **What role does noise level play in modulating reaction times?** and **How does the interaction of distraction levels and noise level contribute to variability in reaction performance?**
+
+The report provides a detailed overview of the study’s methodology, design, and data collection process, followed by primary and secondary analyses, model justification, and interpretation of findings. Additionally, the study’s limitations for future study are discussed.
+
+## 2. Data
+
+### 2.1 **Study Design & Data Collection**
+
+This study assesses response time using a simple task conducted through an online reaction tool. Participants are prompted to press “Stop” as quickly as possible when the signal (“- - - -”) appears. The time taken to respond, recorded in seconds, serves as the measure of each participant’s reaction time.
+
+The study involves 28 students enrolled in a university statistics course. Each participant performed the reaction tests under four distinct distraction levels: standing in a bustling area, standing in a distraction-free space, walking briskly in a bustling area, and walking in a distraction-free space. For each condition, participants completed the reaction test four times, resulting in a potential total of 16 reaction measurements per participant. This design ensures sufficient data to examine both within-condition and between-condition variability in reaction times.
+
+The dependent variable in this study is **reaction time (in seconds)**. Potential independent variables include distraction levels, noise level (in decibels), hours wake, tiredness rating, current phone usage time (in months), test locations (indoors or outdoors), hours of sleep, light quality, and mood rating.
+
+The dataset contains some missing values: current phone usage time, test location, hours awake, light quality, and mood rating each had one participant with missing entries, impacting four rows per variable due to the repeated-measures design. Noise level has missing values from two participants. Additionally, reaction time has 12 missing values, all attributed to one participant who misunderstood the study design.
+
+Outlier detection and adjustments included excluding the first reaction time measurement for each participant due to potential study effects, scaling down reaction times exceeding 100 seconds (likely due to unit errors) by a factor of 1000, correcting implausible entries such as 56 hours awake based on participant patterns, and removing noise levels below 15 decibels as unrealistic.
+
+```{r, echo=FALSE, include=FALSE}
+data <- read_csv("../data/reaction_time_distraction_data.csv") |> 
+  clean_names()
+
+data <- data[-88, ]
+data$what_was_your_first_reaction_time_in_this_condition_1_4[85] <- (as.numeric(data$what_was_your_second_reaction_time_in_this_condition_2_4[85]) + as.numeric(data$what_was_your_third_reaction_time_in_this_condition_3_4[85]) + as.numeric(data$what_was_your_second_reaction_time_in_this_condition_4_4[85]))/3
+
+data <- data |>
+    filter(id != 8) |> 
+  mutate(what_was_your_second_reaction_time_in_this_condition_2_4 = ifelse(what_was_your_second_reaction_time_in_this_condition_2_4 == "0..466", 
+         yes = 0.466, 
+         no = what_was_your_second_reaction_time_in_this_condition_2_4)) |>
+  mutate(what_was_your_second_reaction_time_in_this_condition_2_4 = as.numeric(what_was_your_second_reaction_time_in_this_condition_2_4))
+data$how_long_have_you_been_using_your_smartphone_in_months[63] <- 36
+
+data_long <- data |>
+  pivot_longer(cols = c(contains("reaction_time_in_this_condition")), names_to = "replicate", values_to = "reaction_time") |>
+  rename(distraction_level = which_statement_describes_your_environment_for_this_measurement) |>
+  rename(mood_rating = "what_is_your_mood_very_negative_feeling_sad_anxious_or_upset_low_energy_difficulty_focusing_negative_feeling_somewhat_down_or_irritated_energy_is_low_but_manageable_neu",
+         tiredness_rating = "how_tired_are_you_on_a_scale_from_1_7_fully_alert_wide_awake_very_lively_responsive_but_not_at_peak_okay_somewhat_fresh_a_little_tired_less_than_fresh_moderately",
+         noise_level = "what_is_the_noise_level_in_decibels",
+         light_quality = "what_is_the_light_quality_in_your_testing_environment_poor_too_dim_or_too_harsh_uncomfortable_for_tasks_causes_strain_or_glare_adequate_light_is_acceptable_but_not_ideal_ok_for_m",
+         hours_of_sleep = "how_many_hours_did_you_sleep_last_night",
+         hours_awake = "how_many_hours_has_it_been_since_you_woke_up_this_morning",
+         phone_months = "how_long_have_you_been_using_your_smartphone_in_months",
+         indoor_or_outdoor = "are_you_indoors_or_outdoors") |>
+  mutate(order_of_mesaurements = paste(under_which_distraction_condition_did_you_record_reaction_time_first,
+                                under_which_distraction_condition_did_you_record_reaction_time_second,
+                                      under_which_distraction_condition_did_you_record_reaction_time_third,
+                                       under_which_distraction_condition_did_you_record_reaction_time_fourth)) |>
+  select(-contains("under_which_distraction_condition")) |>
+  select(-question) |>
+  mutate(replicate = case_when(replicate == "what_was_your_first_reaction_time_in_this_condition_1_4" ~ 1,
+                               replicate == "what_was_your_second_reaction_time_in_this_condition_2_4" ~ 2,
+                               replicate == "what_was_your_third_reaction_time_in_this_condition_3_4" ~ 3,
+                               replicate == "what_was_your_second_reaction_time_in_this_condition_4_4" ~ 4),
+         replicate = factor(replicate))
+
+data_long <- data_long |>
+  mutate(reaction_time = ifelse(reaction_time > 100, yes = reaction_time / 1000, no = reaction_time)) |>
+  mutate(phone_months = gsub(" months", "", phone_months)) |>
+  mutate(phone_months = gsub(" month", "", phone_months)) |>
+  mutate(indoor_or_outdoor = case_when(
+    indoor_or_outdoor %in% c("indoor", "indoors", "Indoor", "Indoors") ~ "indoors",
+    indoor_or_outdoor %in% c("outdoor", "outdoors", "Outdoor", "Outdoors") ~ "outdoors")) |>
+  mutate(light_quality = case_when(
+    light_quality %in% c("Poor", 1) ~ 1,
+    light_quality %in% c("Adequate", "adequate", 2) ~ 2,
+    light_quality %in% c("Excellent", "excellent", "Excellemt", 3) ~ 3)) |>
+  mutate(tiredness_rating = case_when(
+    tiredness_rating %in% c("Fully alert", "fully alert", "Fully", 1) ~ 1,
+    tiredness_rating %in% c("Very", 2) ~ 2,
+    tiredness_rating %in% c("Okay", 3) ~ 3,
+    tiredness_rating %in% c(4) ~ 4,
+    tiredness_rating %in% c(5) ~ 5,
+    tiredness_rating %in% c("extremely tired", "extremely", "Extremely", 6) ~ 6,
+    tiredness_rating %in% c(7) ~ 7)) |>
+  mutate(mood_rating = case_when(
+    mood_rating %in% c("Very negative", "Very negstive", 1) ~ 1,
+    mood_rating %in% c("negative", 2) ~ 2,
+    mood_rating %in% c("Neutral", 3) ~ 3,
+    mood_rating %in% c("Positive", 4) ~ 4,
+    mood_rating %in% c(5) ~ 5)) |>
+   mutate(hours_awake = gsub(" hours", "", hours_awake)) |>
+   mutate(hours_awake = gsub(" hour", "", hours_awake)) |>
+   mutate(hours_of_sleep = gsub(" hours", "", hours_of_sleep)) |>
+   mutate(noise_level = gsub(" dB", "", noise_level))
+
+data_long$phone_months <- as.numeric(data_long$phone_months)
+data_long$hours_awake <- as.numeric(data_long$hours_awake)
+data_long$hours_of_sleep <- as.numeric(data_long$hours_of_sleep)
+data_long$noise_level <- as.numeric(data_long$noise_level)
+
+data_long$hours_awake[313] <- 14.0
+data_long$hours_awake[314] <- 14.0
+data_long$hours_awake[315] <- 14.0
+data_long$hours_awake[316] <- 14.0
+data_long$hours_awake[165] <- 7.0
+data_long$hours_awake[166] <- 7.0
+data_long$hours_awake[167] <- 7.0
+data_long$hours_awake[168] <- 7.0
+
+data_long$distraction_level[289] <- "Standing in a bustling area"
+data_long$distraction_level[290] <- "Standing in a bustling area"
+data_long$distraction_level[291] <- "Standing in a bustling area"
+data_long$distraction_level[292] <- "Standing in a bustling area"
+
+data_long <- data_long |> filter(replicate != 1)
+```
+
+### 2.2 Data Visualization
+
+An initial histogram of reaction times (shown in @fig-1) shows an approximately normal distribution with a slight right skew. Although not perfectly normal, the deviation does not seem severe enough to violate the normality assumption.
+
+```{r fig.cap="Histogram of Reaction Times",fig.width=8,fig.height=5,fig.pos="H",echo=FALSE,fig.width=5,fig.height=3}
+#| label: fig-1
+ggplot(data_long, aes(x=reaction_time)) +
+  geom_histogram(binwidth=0.05, fill="skyblue", color="darkblue") +
+  ggtitle("Histogram of Reaction Times") +
+  xlab("Reaction Time (Seconds)") +
+  ylab("Frequency") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+        axis.title.x = element_text(size = 10, face = "bold"),
+        axis.title.y = element_text(size = 10, face = "bold"),
+        axis.text.x = element_text(size = 9),
+        axis.text.y = element_text(size = 9))
+```
+
+A boxplot of reaction times by distraction level (presented in @fig-2) reveals that distraction levels significantly impact reaction times. Standing in a distraction-free space yields the shortest reaction times, while walking briskly in a bustling area results in the longest times. This pattern suggests that both physical activity and environmental distractions influence response speed.
+
+```{r fig.cap="Boxplot of Reaction Time by Distraction Level",echo=FALSE,fig.width=10,fig.height=5,fig.pos="H"}
+#| label: fig-2
+ggplot(data_long, aes(x = distraction_level, y = reaction_time)) +
+  geom_boxplot(outlier.colour = "red", outlier.shape = 1, fill = "lightblue", color = "darkblue", width = 0.6) +
+  labs(title = "Reaction Time by Distraction Level",
+       x = "Distraction Level",
+       y = "Reaction Time (Seconds)") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+    axis.title.x = element_text(size = 14, face = "bold"),
+    axis.title.y = element_text(size = 14, face = "bold"),
+    axis.text.x = element_text(size = 12, face = "bold"),
+    axis.text.y = element_text(size = 13)) +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+
+```
+
+@fig-3 provides an initial visualization of how reaction time changes with noise level across different distraction levels. Each condition is depicted with distinct scatter points and a regression line to capture the relationship between noise level and reaction time with each distraction level.
+
+The regression lines reveal notable differences in the relationship between noise level and reaction time across distraction scenarios. For standing in a bustling area, reaction times remain relatively stable but show a slight decrease at higher noise levels. For standing in a distraction-free area, reaction times exhibit a modest upward trend, suggesting that increasing noise levels might interfere with focus in quieter settings. Conversely, walking briskly in a bustling area shows a notable decrease in reaction time with increasing noise, potentially reflecting heightened alertness in these dynamic environments. Finally, walking in a distraction-free space also demonstrates a downward trend, albeit more gradual, indicating that noise may reduce reaction times even in less distracting walking conditions.
+
+These trends collectively highlight the potential for noise level to influence reaction time differently across distraction contexts, providing a foundation for deeper exploration of these relationships in subsequent analyses.
+
+```{r fig.cap="Interaction Plot for Effect of Noise Level on Reaction Time",echo=FALSE,fig.width=10,fig.height=6,fig.pos="H",warning=FALSE}
+#| label: fig-3
+data_long_n <- data_long |>
+  filter(noise_level >= 15) |> 
+  na.omit(data_long$noise_level)
+
+ggplot(data_long_n, aes(x = noise_level, y = reaction_time, color = factor(distraction_level))) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Reaction Time Variation by Noise Level Across Distraction Levels",
+    x = "Noise Level (Decibels)",
+    y = "Reaction Time (Seconds)",
+    color = "Distraction Levels"
+  ) +
+  scale_color_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title.x = element_text(size = 13, face = "bold"),
+    axis.title.y = element_text(size = 13, face = "bold"),
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    legend.title = element_text(size = 13, face = "bold"),
+    legend.text = element_text(size = 12)
+  )
+```
+
+@fig-4 and @fig-5 illustrate individual variability in reaction times across two randomly selected conditions. These plots demonstrate notable difference in baseline reaction times among participants, even within the same range of distraction, justifying the inclusion of random intercepts in the model to account for individual differences.
+
+```{r fig.cap="Individual Reaction Time Variability Across Replicates for Walking in a Bustling Area Condition",echo=FALSE,fig.width=8, fig.height=6,fig.pos="H"}
+#| label: fig-4
+data_walking_briskly <- data_long |>
+  filter(distraction_level == "Walking briskly in a bustling area")
+  
+xyplot(reaction_time ~ replicate | factor(id), data = data_walking_briskly, main = "Reaction Time Variability for Walking in a Bustiling Area", xlab = "Replicates", ylab = "Reaction Time (Seconds)", par.settings = list(par.main.text = list(cex = 1.4), par.xlab.text = list(cex = 1.2, font = 2), par.ylab.text = list(cex = 1.2, font = 2)), scales = list(x = list(cex = 1.1), y = list(cex = 1.1)))
+```
+
+```{r fig.cap="Individual Reaction Time Variability Across Replicates for Standing in a Distraction-Free Space",echo=FALSE,fig.width=8, fig.height=6,fig.pos="H"}
+#| label: fig-5
+data_standing_disfree <- data_long |>
+  filter(distraction_level == "Standing in a distraction-free space")
+  
+xyplot(reaction_time ~ replicate | factor(id), data = data_standing_disfree, main = "Reaction Time Variability for Standing in a Distraction-Free Space", xlab = "Replicates", ylab = "Reaction Time (Seconds)", par.settings = list(par.main.text = list(cex = 1.4), par.xlab.text = list(cex = 1.2, font = 2), par.ylab.text = list(cex = 1.2, font = 2)), scales = list(x = list(cex = 1.1), y = list(cex = 1.1)))
+```
+
+## 3. Methods
+
+### **3.1 Model Methodology: Linear Mixed Model**
+
+To analyze the relationship between distraction levels and reaction times, as well as the interaction of noise level with distraction levels, **Linear Mixed Models (LMMs)** with **random intercepts** were applied. A Linear Mixed Model is a statistical technique that combines **fixed effects**, which estimate the influence of observed variables (i.e., distraction level and noise level), with random effects, which accounts for variability across individual subjects. This model structure is particularly suitable for analyzing repeated measurements, where each participant provides multiple reaction time observations under different distraction conditions.
+
+The primary analysis examined the effect of distraction levels on reaction times. Distraction levels were modeled as fixed effects, while random intercepts accounted for between-participant variability. To handle potentially differing variability in reaction times across distraction levels, the model incorporated **heteroscedasticity** across distraction levels, improving fit as indicated by AIC, BIC, and log-likelihood values.
+
+The secondary analysis investigates the impact of noise level and its interaction with distraction levels on reaction times. Fixed effects included noise level, distraction levels, and their interaction terms, while random intercepts captured individual differences.
+
+### **3.2 Justification of Model Selection**
+
+The Linear Mixed Model (LMM) was chosen as it is well-suited for the repeated measures design of this study. There is a total of 16 reaction measurements per participant. The LMM accommodates this structure by incorporating random intercepts, which account for with-in subject correlations and capture individual baseline differences in reaction times. This feature ensures a more accurate estimation of the fixed effects associated with each distraction level.
+
+Furthermore, the LMM is capable of modeling differences in error variability across distraction levels. Reaction time variability is expected to change with the intensity of distractions; for example, more demanding conditions like walking briskly in a bustling area may exhibit higher variability than standing in a distraction-free space. By allowing each distraction condition to have its own variance, the LMM ensures the model accurately reflects these differences, leading to more reliable conclusions.
+
+The inclusion of random intercepts is further justified by the substantial variability across participants, as indicated by differences between marginal $R^2$ and conditional $R^2$ values. Random effects capture individual differences in baseline reaction times, improving both the accuracy and generalizability of the results. This approach allows the model to separate within-subject variability (reaction time changes under different distraction levels) from between-subject variability (individual baseline differences).
+
+The inclusion of random intercepts addresses the substantial variability across subjects, as indicated by differences between marginal $R^2$ and conditional $R^2$. The random effects capture individual differences in baseline reaction times, which improves the accuracy and generalizability of the results. Overall, the LMM with random intercepts provides a robust framework that accounts for both fixed effects of distraction levels and random effects of individual baseline differences, along with the flexibility to handle non-constant variance across conditions. This makes it an appropriate and reliable choice for investigating how different distraction levels impact reaction times, providing insights that are both statistically sound and practically meaningful for applications where response speed is critical.
+
+Model fit metrics support this choice: the flexibility to handle non-constant variance across distraction conditions improved the model, as indicated by lower Akaike Information Criterion (AIC) and Bayesian Information Criterion (BIC) values, along with higher log-likelihood scores. ANOVA tests confirmed that allowing for heteroscedasticity significantly enhanced the model's fit to the data. These adjustments ensure the model captures both the fixed effects of distraction levels and the random effects of individual differences while accommodating variability specific to each condition.
+
+Overall, the LMM with random intercepts provides a robust framework for analyzing the relationship between distraction levels and reaction times. Its ability to account for individual differences and condition-specific variability makes it an appropriate and reliable choice, offering statistically sound insights into how distraction levels impact reaction times. This is particularly relevant for practical applications where rapid and accurate responses are critical.
+
+## 4. Results and Discussion
+
+### 4.1 **Primary Analysis Estimates**
+
+**Table 1** provides the estimated coefficients, standard errors, p-values, and 95% confidence interval for coefficients for the final model for primary research analysis.
+
+```{r,echo=FALSE,include=FALSE}
+model1 <- lme(reaction_time~distraction_level,data=data_long,
+              random=~1|id,method="REML", 
+              weights=varIdent(form=~1|distraction_level))
+summary(model1)
+```
+
+```{r,echo=FALSE,include=FALSE}
+model2 <- lme(reaction_time~distraction_level, data=data_long,
+              random=~1|id, method="REML")
+```
+
+```{r,echo=FALSE,include=FALSE}
+anova(model2, model1)
+```
+
+| Variable | Value | Std.Error | P-value | 95% CI |
+|:-----------------:|:------------:|:------------:|:------------:|:------------:|
+| Intercept (baseline) | 0.4160 | 0.0134 | \<0.001 | (0.3896, 0.4425) |
+| distraction_levelStanding in a distraction-free space | -0.0598 | 0.0113 | \<0.001 | (-0.0821, -0.0375) |
+| distraction_levelWalking briskly in a bustling area | 0.0735 | 0.0169 | \<0.001 | (0.0403, 0.1066) |
+| distraction_levelWalking in a distraction-free space | 0.0069 | 0.0126 | 0.5851 | (-0.0180, 0.0318) |
+
+### **4.2 Interpretation of Estimates**
+
+The fixed effect intercept represents the overall average baseline reaction time for all participants when they are **walking in a distraction-free area**, estimated at 0.4160 seconds. The coefficient for **standing in a distraction-free space**indicates that, on average, this condition decreases reaction time by 0.0598 seconds compared to the baseline condition. The coefficientfor **walking briskly in a bustling area** shows that, on average, this scenario increases the reaction time by 0.0735 seconds compared to the baseline condition. The coefficient for **walking in a distraction-free space**suggests that, on average, this level of distraction increases the reaction time by 0.0069 seconds compared to the baseline condition. Notably, the coefficient for walking in a distraction-free space has a confidence interval that includes 0 (95% CI: -0.0180, 0.0318). This suggests that the specific condition of walking in a distraction-free space does not substantially differ from the baseline in its effect on reaction times. Despite this, the overall significant effect of distraction levels indicates that as a group, the conditions represent meaningful differences in reaction performance. The lack of statistical significance for this condition may reflect a smaller effect size, reduced variability, or limited power to detect differences when distractions are minimized.
+
+Overall, the results demonstrate that **different distraction levels significantly affect reaction times**. Standing in a distraction-free space yield the shortest reaction times, while walking briskly in a bustling area results in the longest, emphasizing the role of physical and environmental distractions in slowing cognitive performance.
+
+The random effects capture variability in baseline reaction times across participants, highlighting significant individual differences. The estimated random intercepts ranged from -0.1045 to 0.0909 (results detailed in **Appendix A, @fig-A1**), indicating that some participants consistently responded faster than the group average, while others were slower. This variability likely arises from individual differences in factors such as cognitive processing speed and task familiarity. Accounting for this variability through random intercepts improves the reliability of fixed effect estimates and ensures the model adequately represents individual differences.
+
+### 4.3 Heteroscedasticity Across Distraction Levels
+
+**Table 2** provides the estimates of the random effect standard deviation and the error standard deviation for each distraction level. The random effect standard deviation is consistent across distraction levels, while **the error standard deviations differ across distraction levels**. This observation justifies allowing the error variance to vary with distraction level in the final model, as it aligns with the observed differences in variability across conditions (Sheather, 2009). Furthermore, residual plot (presented in **Appendix B, @fig-B1**) highlights that assuming constant error variability is not reasonable, as the residuals for different distraction levels exhibit clear differences in spread. This further reinforces the decision to model error variance as a function of distraction level.
+
+|                                     | Random Effect SD | Error SD |
+|-------------------------------------|------------------|----------|
+| Walking in a distraction-free space | 0.0460           | 0.0686   |
+| Standing in a distraction-free area | 0.0460           | 0.0465   |
+| Standing in a bustling area         | 0.0460           | 0.0909   |
+| Walking briskly in a bustling area  | 0.0460           | 0.1216   |
+
+: Estimates of the Random Effect and Error Standard Deviations {#tbl-model2}
+
+### 4.4 **Secondary Research Questions**
+
+```{r,echo=FALSE,include=FALSE}
+data_long_t <- data_long |> na.omit(data_long$noise_level)
+
+data_long_t2 <- data_long_t |> filter(noise_level >= 15)
+model3 <- lme(reaction_time~noise_level, data=data_long_t2,random = ~ 1|id, method="REML")
+```
+
+```{r,echo=FALSE,include=FALSE}
+data_long_t2 <- data_long_t |> filter(noise_level >= 15)
+
+model4 <- lme(reaction_time~distraction_level*noise_level, data=data_long_t2, 
+              random=~1|id, method="REML")
+```
+
+```{r,echo=FALSE,include=FALSE}
+WD <- data_long[data_long$distraction_level=="Walking in a distraction-free space",]
+SD <- data_long[data_long$distraction_level=="Standing in a distraction-free space",]
+WB <- data_long[data_long$distraction_level=="Walking briskly in a bustling area",]
+SB <- data_long[data_long$distraction_level=="Standing in a bustling area",]
+
+mFRI <- lme(reaction_time~noise_level,data=data_long_t,random=~1|id,method="REML")
+summary(mFRI)
+```
+
+The secondary analysis aims to explore the relationship between reaction time and noise level, as well as the interaction effects between distraction levels and noise level on reaction time. To address these objectives, two linear mixed-effects models were fitted: **Model 1** examined the effect of noise level on reaction time, while **Model 2** assessed the main and interaction effects of distraction levels and noise level.
+
+The results of Model 1 (results detailed in **Appendix C, @tbl-C1**) show that **noise level** **significantly impacts reaction time**. The coefficient for noise level indicates that higher noise levels are associated with a slight increase in reaction times.
+
+In **Model 2**, **the interaction terms between distraction levels and noise level are not statistically significant** (results detailed in **Appendix C, @tbl-C2**). However, the lack of significance in the interaction does not imply that distraction levels and noise level are completely independent in their influence. Instead, it indicates that the magnitude of the noise level effect does not vary consistently across distraction conditions.
+
+The non-significant interaction term between noise level and distraction levels can be explained by the overlapping trends observed across distraction conditions, as visualized in @fig-3. While the slopes of reaction time against noise level differ slightly between conditions, these differences are not large enough to yield statistical significance. This overlap indicates that the relationship between noise level and reaction time remains relatively stable across the distraction levels.
+
+The secondary analysis reveals that noise level significantly impacts reaction time as an independent factor, with higher noise levels leading to slower responses. The finding emphasizes the importance of noise as a key environmental factor influencing cognitive performance, even in the absence of significant interaction effects. Future research could focus on more targeted experimental designs or larger sample sizes to explore these trends further.
+
+### 4.5 Practical Significance
+
+```{r,echo=FALSE,include=FALSE}
+VarCorr(model1)
+```
+
+```{r,echo=FALSE,include=FALSE}
+random_variance <- (0.04601435)^2
+residual_variance <- (model1$sigma)^2
+fixed_variance <- var(predict(model1, re.form = NA))
+
+marginal_r2 <- fixed_variance / (fixed_variance + random_variance + residual_variance)
+conditional_r2 <- (fixed_variance + random_variance) / (fixed_variance + random_variance + residual_variance)
+```
+
+**The marginal** $R^2$**of 0.3677 and conditional** $R^2$ **of 0.5641** for the primary research analysis highlight a notable difference, indicating substantial variability across subjects. This difference supports the choice of a Linear Mixed Model with random intercepts, as it allows the model to effectively capture individual baseline differences in reaction times.
+
+In the context of linear model analysis, effect size can be measured by the proportion of explained variability relative to total variability, which in the study corresponds to the conditional $R^2$. The conditional $R^2$ value, greater than 0.15, is generally considered a large effect size, suggesting that **the impact of distraction levels on reaction times is both statistically and practically significant**. This indicates that the distraction levels meaningfully influence reaction times, reinforcing the relevance of these findings for real-world applications.
+
+### 4.6 Limitations
+
+A notable limitation of this study is the presence of deviations in the Q-Q plot of random effects (shown in **Appendix B, @fig-B2**), particularly for participants **id17** and **id26**. These deviations suggest that these individuals may not only have random intercepts but also random slopes, which are not accounted for in the current model. This indicates potential variability in how these participants respond to different levels of distraction.
+
+Another limitation is data handling method. The original dataset contained missing values and anomalies for which appropriate imputation methods were not identified, leading to their exclusion during model fitting. While some extreme values might intuitively seem incorrect, they could still be realistic occurrences. The decision to remove all missing and dubious values may have been overly conservative, potentially affecting the model's ability to detect statistically significant associations.
+
+Moreover, the sample size in this study is relatively small, and all participants were students enrolled in a university statistics course. This homogeneity limits the representativeness of the sample, raises concerns about the generalizability of the findings to broader populations or to individuals in different professions.
+
+Finally, other potential covariates, such as hours of sleep, current phone usage time, participants' sleep quality, and prior exposure to distractions, were not included or measured in the model. These factors could influence reaction times and interact with the distraction levels in meaningful ways. Future studies should consider incorporating random slopes, including these potential covariates, and recruiting a more diverse sample to enhance the robustness and generalizability of the findings.
+
+## **5. Conclusion**
+
+This study examined the impact of distraction levels on reaction times, a critical measure of cognitive efficiency, particularly in high-stakes environments. Using a Linear Mixed Model, reaction times were analyzed across four distraction levels: **standing in a distraction-free space**, **standing in a bustling area**, **walking in a distraction-free space**, and **walking briskly in a bustling area**. The model accounted for both fixed effects of distraction levels and random effects to capture individual variability in baseline reaction times.
+
+The results indicated that **distraction levels significantly influence reaction times**. Standing in a distraction-free space produced the shortest reaction times, while walking briskly in a bustling area resulted in the longest delays. This highlights the role of both environmental distractions and physical activity in impeding cognitive performance. Noise level was also identified as a secondary factor influencing reaction performance, with higher noise levels contributing to marginal increases in reaction times. While the interaction between noise level and distraction conditions was not statistically significant, the analysis demonstrated a consistent influence of noise across all distraction levels.
+
+These findings underscore the importance of **mitigating environmental distractions and physical demands in situations requiring rapid responses**. Despite its strengths, the study faced limitations, including a homogeneous sample, exclusion of potential covariates, and challenges related to missing data handling. Future research should address these limitations to include more diverse populations, incorporate additional variables, and explore random slope models to gain deeper understanding of the interplay between distraction, noise, and cognitive performance.
+
+\newpage
+
+## References
+
+Dehais, F., Lafont, A., Roy, R., & Fairclough, S. (2020). A Neuroergonomics Approach to Mental Workload, Engagement and Human Performance. Frontiers in neuroscience, 14, 268. https://doi.org/10.3389/fnins.2020.00268
+
+Cummings, M. (n.d.). What’s all the buzz about reaction time? Perform Better. https://www.performbetter.com/whats-all-the-buzz-about-reaction-time
+
+Sheather, S. J. (2009). Mixed Models. In A modern approach to regression with R by Simon Sheather (pp. 342–343). essay, Springer-Verlag New York.
+
+\newpage
+
+## Appendix A
+
+```{r,echo=FALSE,include=FALSE}
+random_intercepts <- ranef(model1)
+```
+
+| id  | Random Intercept |
+|:---:|:----------------:|
+|  1  |   0.0044511068   |
+|  2  |  -0.0384082423   |
+|  3  |   0.0313854741   |
+|  4  |  -0.0193702088   |
+|  5  |  -0.0453157856   |
+|  6  |  -0.0118508898   |
+|  7  |  -0.0009294677   |
+|  9  |  -0.0179814727   |
+| 10  |  -0.0374596096   |
+| 11  |  -0.0201043100   |
+| 12  |  -0.0114671070   |
+| 13  |   0.0780907999   |
+| 14  |   0.0412527536   |
+| 15  |   0.0193512151   |
+| 16  |  -0.0087965487   |
+| 17  |  -0.1044903790   |
+| 18  |  -0.0191280805   |
+| 19  |  -0.0220873306   |
+| 20  |  -0.0269095943   |
+| 21  |   0.0839133945   |
+| 22  |   0.0163588563   |
+| 23  |  -0.0179762488   |
+| 24  |  -0.0025617293   |
+| 25  |   0.0086188248   |
+| 26  |   0.0908682591   |
+| 27  |  -0.0169741961   |
+| 28  |   0.0475205165   |
+
+: Random Intercepts Estimated in the Primary Analysis Model {#tbl-modelA1}
+
+\newpage
+
+## Appendix B
+
+```{r fig.cap="Residuals Plot Across Distraction Levels",echo=FALSE,fig.pos="H",fig.width=9,fig.height=6}
+#| label: fig-B1
+plot(model1,form = resid(., type = "response",level=1) ~ fitted(.,level=1) | distraction_level,
+    abline=0, main = "Residuals vs. Fitted Values Across Distraction Levels")
+```
+
+```{r fig.cap="Q-Q Plot of Random Effects",echo=FALSE,fig.pos="H",fig.width=7,fig.height=5}
+#| label: fig-B2
+qqnorm(model1,~ranef(.),id=0.05,cex=0.7, main = "Q-Q Plot of Random Effects")
+```
+
+\newpage
+
+## Appendix C
+
+|  Variable   | Value  | Error SD | p-value  |
+|:-----------:|:------:|:--------:|:--------:|
+|  Intercept  | 0.3083 |  0.0206  | \<0.0001 |
+| noise_level | 0.0019 |  0.0003  | \<0.0001 |
+
+: Random Intercepts Estimated in the Primary Analysis Model {#tbl-C1}
+
+| Variable | Value | Error SD | p-value |
+|:-----------------------:|:--------------:|:--------------:|:--------------:|
+| Intercept | 0.3681 | 0.0863 | \<0.0001 |
+| distraction_levelStanding in a distraction-free space | -0.0998 | 0.0880 | 0.2577 |
+| distraction_levelWalking briskly in a bustling area | 0.0224 | 0.0963 | 0.8162 |
+| distraction_levelWalking in a distraction-free space | 0.0900 | 0.0899 | 0.3176 |
+| noise_level | 0.0007 | 0.0011 | 0.5668 |
+| distraction_levelStandin in a distraction-free space: noise_level | 0.0014 | 0.0013 | 0.3126 |
+| distraction_levelWalking briskly in a bustling area:noise_level | 0.0007 | 0.0013 | 0.5836 |
+| distraction_levelWalking in a distraction-free space:noise_level | -0.0014 | 0.0014 | 0.3378 |
+
+: Random Intercepts Estimated in the Primary Analysis Model {#tbl-C2}

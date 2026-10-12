@@ -1,0 +1,115 @@
+id,under_which_distraction_condition_did_you_record_reaction_time_first,under_which_distraction_condition_did_you_record_reaction_time_second,under_which_distraction_condition_did_you_record_reaction_time_third,under_which_distraction_condition_did_you_record_reaction_time_fourth,how_long_have_you_been_using_your_smartphone_in_months,question,which_statement_describes_your_environment_for_this_measurement,are_you_indoors_or_outdoors,how_many_hours_has_it_been_since_you_woke_up_this_morning,how_many_hours_did_you_sleep_last_night,what_is_the_noise_level_in_decibels,what_is_the_light_quality_in_your_testing_environment_poor_too_dim_or_too_harsh_uncomfortable_for_tasks_causes_strain_or_glare_adequate_light_is_acceptable_but_not_ideal_ok_for_m,how_tired_are_you_on_a_scale_from_1_7_fully_alert_wide_awake_very_lively_responsive_but_not_at_peak_okay_somewhat_fresh_a_little_tired_less_than_fresh_moderately,what_is_your_mood_very_negative_feeling_sad_anxious_or_upset_low_energy_difficulty_focusing_negative_feeling_somewhat_down_or_irritated_energy_is_low_but_manageable_neu,what_was_your_first_reaction_time_in_this_condition_1_4,what_was_your_second_reaction_time_in_this_condition_2_4,what_was_your_third_reaction_time_in_this_condition_3_4,what_was_your_second_reaction_time_in_this_condition_4_4
+22,1,2,3,4,37,NA,Standing in a distraction-free space,Indoors,11,6,53,2,2,3,0.492,0.409,0.357,0.358
+22,1,2,3,4,37,NA,Walking in a distraction-free space,Indoors,11,6,53,2,2,3,0.43,0.507,0.408,0.485
+22,1,2,3,4,37,NA,Standing in a bustling area,Outdoors,11,6,67,2,2,3,0.481,0.419,0.371,0.488
+22,1,2,3,4,37,NA,Walking briskly in a bustling area,Outdoors,11,6,67,2,2,3,0.543,0.484,0.406,0.476
+24,3,4,1,2,144,NA,Standing in a bustling area,Indoors,12,7,75,1,6,3,0.494,0.332,0.449,0.387
+23,3,1,4,2,120,NA,Standing in a bustling area,Outdoors,5,8,67.6,3,2,3,0.472,0.358,0.364,0.412
+23,3,1,4,2,120,NA,Standing in a distraction-free space,Indoors,8,8,38.2,3,4,3,0.387,0.359,0.332,0.326
+23,3,1,4,2,120,NA,Walking briskly in a bustling area,Outdoors,12,8,69.1,2,5,3,0.406,0.394,0.438,0.377
+14,1,1,1,1,36,NA,Standing in a distraction-free space,indoors,4,10,40,Adequate,Very,Positive,0.438,0.349,0.357,0.349
+20,3,4,1,2,8 months,NA,Standing in a bustling area,outdoor,5,7,85,Excellent,4,4,0.454,0.363,0.366,0.157
+20,3,4,1,2,8,NA,Walking briskly in a bustling area,outdoor,5.5,7,80,Excellent,4,4,0.576,0.379,0.623,0.376
+20,3,4,1,2,8,NA,Standing in a distraction-free space,indoors,5.5,7,50,Adequate,4,3,0.358,0.358,0.371,0.352
+20,3,4,1,2,8,NA,Walking in a distraction-free space,indoors,6,7,50,Adequate,4,3,0.382,0.387,0.363,0.339
+23,3,1,4,2,120,NA,Walking in a distraction-free space,Indoors,7,7,44.5,3,6,3,0.359,0.441,0.381,0.448
+4,1,2,3,4,44,NA,Standing in a distraction-free space,indoors,8.5,5.5,38,2,4,3,0.37,0.357,0.336,0.311
+4,1,2,3,4,44,NA,Walking in a distraction-free space,indoors,8.5,5.5,38,2,4,3,0.48,0.403,0.404,0.397
+14,2,2,2,2,36,NA,Walking in a distraction-free space,indoors,10,10,50,Poor,Extremely,Neutral,0.468,0.452,0.531,0.483
+12,1,2,4,3,42,NA,Standing in a distraction-free space,indoors,3.5,9,38,2,3,2,0.831,0.418,0.312,0.347
+12,1,2,4,3,42,NA,Walking in a distraction-free space,indoors,4,9,43,2,4,3,0.433,0.413,0.34,0.471
+12,1,2,4,3,46,NA,Walking briskly in a bustling area,outdoors,5,6,93,3,5,4,0.381,0.377,0.471,0.411
+12,1,2,4,3,46,NA,Standing in a bustling area,indoors,5,6,83,3,4,3,0.406,0.375,0.37,0.377
+14,3,3,4,4,36,NA,Standing in a bustling area,indoors,12,10,80,Adequate,Okay,Positive,0.434,0.777,0.551,0.435
+9,1,2,4,3,17,NA,Standing in a distraction-free space,indoors,9,8,82,2,4,3,1.47,0.347,0.34,0.329
+9,1,2,4,3,17,NA,Walking in a distraction-free space,indoors,9,8,82,2,4,3,0.427,0.392,0.433,0.385
+26,1,3,4,2,120,na,Standing in a distraction-free space,indoors,2,8,37,2,3,3,0.481,0.419,0.398,0.384
+8,4,2,1,3,45,NA,Walking briskly in a bustling area,Indoors,3 hours,6 hours,52,3,2,1,NA,NA,NA,0.769
+7,1,2,3,4,5,NA,Standing in a distraction-free space,indoor,4,8,44.92,2,3,4,0.352,0.368,0.385,0.368
+7,1,2,3,4,5,NA,Walking in a distraction-free space,indoor,5,8,46.5,2,3,4,0.455,0.325,0.32,0.325
+28,1,2,3,4,112,?,Standing in a distraction-free space,indoors,4,8,69,2,3,3,0.325,0.4,0.424,0.525
+28,1,2,3,4,24,?,Walking in a distraction-free space,NA,4,8,69,2,3,3,0.5,0.424,0.395,0.436
+28,1,2,3,4,24,?,Standing in a bustling area,indoors,4,8,80,2,3,3,0.4,0.372,0.579,0.442
+28,1,2,3,4,24,?,Walking briskly in a bustling area,indoor,4,8,80,2,3,3,0.331,0.412,0.541,0.534
+15,3,4,2,1,38,NA,Standing in a bustling area,indoors,3,5,85,3,5,3,0.64,0.409,0.344,0.338
+15,3,4,2,1,38,NA,Walking briskly in a bustling area,indoors,3,5,85,3,5,3,0.39,0.464,0.385,0.459
+15,3,4,2,1,38,NA,Walking in a distraction-free space,indoors,5,5,48,3,4,4,0.434,0.563,0.388,0.447
+15,3,4,2,1,38,NA,Standing in a distraction-free space,indoors,5,5,46,3,4,4,0.17,0.483,0.368,0.351
+4,1,2,3,4,44,na,Standing in a bustling area,outdoors,5,8,64,3,4,3,0.35,0.349,0.453,0.378
+24,3,4,1,2,144,NA,Walking briskly in a bustling area,outdoors,7,8,90,3,3,3,0.472,0.614,0.462,0.523
+4,1,2,3,4,44,na,Walking briskly in a bustling area,outdoors,5,8,63,3,4,3,0.357,0.541,0.419,0.4
+24,3,4,1,2,144,NA,Standing in a distraction-free space,indoors,8,8,55,3,4,3,0.388,0.365,0.34,0.4
+17,1,3,4,2,56,NA,Standing in a distraction-free space,indoor,7,10,53,3,1,5,0.391,0.291,0.2,0.157
+17,1,3,4,2,56,NA,Standing in a bustling area,outdoors,7,10,75,3,1,5,0.243,0.343,0.273,0.25
+17,1,3,4,2,56,NA,Walking briskly in a bustling area,outdoors,56,10,75,3,1,5,0.451,0.318,0.811,0.332
+17,1,3,4,2,56,NA,Walking in a distraction-free space,indoors,7,10,52,2,1,5,0.694,0.319,0.26,0.32
+9,1,2,4,3,17,NA,Standing in a bustling area,outdoors,6,7,106.4,2,5,2,0.352,0.412,0.45,0.408
+9,1,2,4,3,17,NA,Walking briskly in a bustling area,outdoors,6.5,7,110.3,3,5,2,0.353,0.413,0.39,0.358
+18,3,1,2,4,55,NA,Standing in a bustling area,Outdoors,8.5,6.5,72,Excellent,3,Positive,0.479,0.398,0.401,0.342
+7,1,2,3,4,5,NA,Standing in a bustling area,outdoor,9,8,66,2,4,3,0.381,0.699,0.345,0.699
+18,3,1,2,4,55,NA,Standing in a distraction-free space,Indoors,8.5,6.5,53,Excellent,3,Positive,0.352,0.371,0.36,0.332
+7,1,2,3,4,5,NA,Walking briskly in a bustling area,outdoors,9,8,66,2,5,3,0.388,0.368,0.387,0.368
+18,3,1,2,4,55,NA,Walking in a distraction-free space,Indoors,8.5,6.5,52,Excellent,3,Positive,0.396,0.414,0.366,0.344
+27,1,1,1,1,156,Answer,Walking in a distraction-free space,indoors,4,9,2,excellent,2,3,0.42,0.389,0.39,0.378
+27,2,2,2,2,156,Answer,Walking briskly in a bustling area,outdoors,8,9,81,3,3,3,0.9,0.764,0.518,0.451
+27,1,1,1,1,156,Answer,Standing in a distraction-free space,indoors,4,9,1,3,2,3,0.371,0.362,0.329,0.309
+18,3,1,2,4,55,NA,Walking briskly in a bustling area,Outdoors,9,6.5,72,3,3,4,0.371,0.393,0.371,0.524
+27,2,2,2,2,156,Answer,Standing in a bustling area,outdoors,8,9,81,3,3,3,0.478,0.31,0.409,0.411
+11,1,4,2,3,24,NA,Standing in a distraction-free space,Indoors,1,10,34,3,4,3,418,346,318,313
+11,1,4,2,3,24,NA,Walking briskly in a bustling area,Outdoors,4,10,72,2,2,4,437,469,470,500
+11,1,4,2,3,24,NA,Walking in a distraction-free space,Indoors,9,10,45,1,3,4,425,433,426,396
+11,1,4,3,2,24,NA,Standing in a bustling area,Indoors,3,10,76,3,2,4,398,454,304,373
+24,3,4,1,2,144,NA,Walking in a distraction-free space,indoors,11,8,40,2,5,3,0.406,0.424,0.348,0.385
+6,1,2,4,3,24 months,NA,Standing in a distraction-free space,Indoor,14,6,32.8,Adequate,6,2,0.449,0.358,0.368,0.253
+6,1,2,4,3,24 months,NA,Walking in a distraction-free space,Indoor,14,6,32.8,Adequate,6,2,0.448,0..466,0.38,0.409
+2,4,2,3,1,36 months (using my current smartphone),NA,Walking briskly in a bustling area,indoors,4,5,87 dB,Adequate,3,4,0.453,0.437,0.658,0.332
+2,4,2,3,1,36 months,NA,Walking in a distraction-free space,indoors,6,5,44 dB,Excellent,4,4,0.376,0.381,0.336,0.475
+2,4,2,3,1,36 months,NA,Standing in a bustling area,outdoors,8,5,78 dB,outdoors,3,3,0.378,0.252,0.422,0.417
+2,4,2,3,1,36 months,NA,Standing in a distraction-free space,indoors,9,5,38 dB,Excellent,5,3,0.343,0.334,0.199,0.364
+21,2,1,3,4,57,NA,Walking in a distraction-free space,indoors,14,7,32,3,5,2,0.9,0.676,0.593,0.721
+21,2,1,3,4,57,NA,Standing in a distraction-free space,indoors,14,7,32,3,5,2,0.406,0.418,0.395,0.383
+21,2,1,3,4,57,NA,Standing in a bustling area,indoors,14,7,65,3,5,2,0.618,0.484,0.509,0.389
+21,2,1,3,4,57,NA,Walking briskly in a bustling area,indoors,14,7,65,3,5,2,0.563,0.52,0.854,0.52
+5,1,2,3,4,23 months,NA,Standing in a distraction-free space,indoor,4 hours,8.5 hours,36,Excellent,Fully,Positive,0.34,0.329,0.304,0.173
+5,1,2,3,4,23 months,NA,Walking in a distraction-free space,indoors,4 hours,8.5 hours,38,Excellent,Fully alert,Positive,0.366,0.360,0.388,0.444
+5,1,2,3,4,23 months,NA,Walking briskly in a bustling area,outdoors,4 hours,8.5 hours,78,Adequate,fully alert,Positive,0.458,0.397,0.37,0.436
+5,1,2,3,4,23 months,NA,Walking briskly in a bustling area,outdoors,5 hours,8.5 hours,83,Excellent,Fully alert,Positive,0.42,0.505,0.528,0.504
+3,2,4,3,1,24,NA,Standing in a distraction-free space,indoors,12.5,6,36,2,4,3,0.478,0.456,0.451,0.399
+3,2,4,3,1,24,NA,Walking in a distraction-free space,indoors,15.5,5,34,2,5,3,0.393,0.406,0.421,0.378
+3,2,4,3,1,24,NA,Standing in a bustling area,outdoors,5,8,60,3,3,3,0.435,0.411,0.423,0.467
+3,2,4,3,1,NA,NA,Walking briskly in a bustling area,outdoors,5,8,60,3,3,3,0.444,0.417,0.443,0.512
+19,2,1,3,4,1 month,0.404,Walking in a distraction-free space,Indoors,NA,7,40,2,4,3,0.404,0.401,0.369,0.375
+19,2,1,3,4,1 month,NA,Standing in a distraction-free space,Indoors,14,7,40,2,4,3,0.306,0.332,0.343,0.33
+14,3,4,3,4,36,NA,Walking briskly in a bustling area,outdoors,11,7,80,adequate,extremely tired,negative,0.645,0.558,0.66,0.674
+6,1,2,4,3,24 months,NA,Walking briskly in a bustling area,Indoor,4,6,NA,Adequate,6,2,0.594,0.264,0.375,0.615
+6,1,2,4,3,24 months,NA,Standing in a bustling area,Indoor,4,5,82.2,Adequate,6,2,0.454,0.424,0.661,0.351
+26,1,3,4,2,120,na,Walking in a distraction-free space,indoors,1,7,33,2,3,3,NA,0.625,0.661,0.68
+26,1,3,4,2,120,na,Standing in a bustling area,outdoors,6,8,73,3,4,2,0.523,0.55,0.498,0.507
+26,1,3,4,2,120,na,Walking briskly in a bustling area,outdoors,10,7,70,3,5,3,0.788,0.652,0.69,0.599
+19,2,1,3,4,1 month,NA,Standing in a bustling area,Outdoors,3,7,NA,3,3,3,0.375,0.397,0.444,0.401
+16,1,2,3,4,72,NA,Standing in a distraction-free space,Indoors,4,8,47,Excellent,3,4,0.427,0.399,0.396,0.323
+16,1,2,3,4,72,NA,Walking in a distraction-free space,Indoors,4,8,48,3,3,4,0.401,0.412,0.362,0.379
+19,2,1,3,4,1 month,NA,Standing in a bustling area,outdoors,3,7,60,3,3,4,0.375,0.396,0.414,0.401
+19,2,1,3,4,1 month,NA,Walking briskly in a bustling area,outdoors,3,7,60,3,3,3,0.495,0.501,0.418,0.441
+16,1,2,3,4,72,NA,Standing in a bustling area,Indoors,5,8,70,3,3,4,0.355,0.377,0.419,0.367
+16,1,2,3,4,72,NA,Walking briskly in a bustling area,Indoors,5,8,63,3,3,4,0.399,0.378,0.432,0.439
+10,3,1,4,2,16,NA,Standing in a bustling area,Indoors,13,9,74,3,5,2,0.484,0.344,0.42,0.375
+10,3,1,4,2,16,NA,Standing in a distraction-free space,Indoors,1,7,40,2,1,3,0.329,0.333,0.327,0.289
+10,3,1,4,2,16,NA,Walking briskly in a bustling area,outdoors,2,7,80,3,2,4,0.365,0.383,0.371,0.494
+10,3,1,4,2,16,NA,Walking in a distraction-free space,outdoors,13,9,50,2,4,3,0.376,0.35,0.392,0.38
+13,3,1,2,4,116,NA,Standing in a bustling area,indoor,15.5,6.5,75,3,5,5,0.619,0.749,0.441,0.458
+13,3,1,2,4,116,NA,Standing in a distraction-free space,indoor,17,6.5,28.2,3,5,5,0.42,0.437,0.436,0.421
+13,3,1,2,4,116,NA,Walking in a distraction-free space,indoor,13,6.5,48.7,3,4,4,0.413,0.445,0.46,0.518
+13,3,1,2,4,116,NA,Walking briskly in a bustling area,indoor,17.5,6.5,103.6,1,3,5,0.539,0.725,0.625,0.915
+25,1,2,3,4,96,NA,Standing in a distraction-free space,indoors,12,9,37.1,3,4,3,0.398,0.381,0.336,0.36
+25,1,2,3,4,96,NA,Walking in a distraction-free space,indoors,12,9,37.2,3,4,3,0.421,0.641,0.317,0.407
+25,1,2,3,4,96,NA,Standing in a bustling area,indoors,12,9,60.8,3,4,3,0.329,0.375,0.429,0.332
+25,1,2,3,4,96,NA,Walking briskly in a bustling area,indoors,12,9,64.8,3,4,3,0.511,0.872,0.369,0.46
+8,4,2,1,3,40,NA,Walking briskly in a bustling area,Indoors,6,8,65,Excellent,Very,Very negstive,NA,NA,NA,0.767
+8,4,2,1,3,40,NA,Standing in a distraction-free space,Indoors,4,7,50,Excellemt,Fully,NA,NA,0.485,NA,NA
+8,4,2,1,3,40,NA,Standing in a distraction-free space,Indoors,10,8,30,Excellemt,Fully alert,Very negative,0.389,NA,NA,NA
+8,4,2,1,3,40,NA,Walking in a distraction-free space,Indoors,2,6,53,Excellemt,Okay,Very negative,NA,NA,0.389,NA
+1,1,3,4,2,22,NA,Walking in a distraction-free space,outdoors,4,8,58,3,3,2,0.43,0.404,0.383,0.386
+1,1,3,4,2,22,NA,Standing in a distraction-free space,indoors,4,8,55,3,3,2,0.413,0.411,0.393,0.386
+1,1,3,4,2,22,NA,Standing in a bustling area,outdoors,10,8,65,2,5,4,0.379,0.389,0.384,0.365
+1,1,3,4,2,22,NA,Walking briskly in a bustling area,outdoors,10,8,65,2,5,4,0.436,0.439,0.445,0.454

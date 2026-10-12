@@ -1,0 +1,389 @@
+---
+title: "EDA - Fall Project"
+format: pdf
+editor: visual
+---
+
+```{r, echo=FALSE, warning=FALSE, include=FALSE}
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+install.packages("tidyverse")
+install.packages("janitor")
+install.packages("dplyr")
+library(tidyverse)
+library(janitor)
+library(dplyr)
+```
+
+## Data Collection and Preparation
+
+This dataset was collected from 28 students in a university statistics course. Each student reported their responses under four different distraction levels. The dataset contains 114 rows and 19 columns. This means that the dataset consists of 114 observations (corresponding to 4 different distraction levels and 28 students) and 19 variables that capture various aspects of the data reported by the students.
+
+```{r, echo=FALSE, include=FALSE}
+data <- read_csv("../data/reaction_time_distraction_data.csv") |>
+  clean_names() 
+```
+
+### Variables overview
+
+-   `id`: double (dbl)
+-   `under_which_distraction_condition_did_you_record_reaction_time_first`: double (dbl)
+-   `under_which_distraction_condition_did_you_record_reaction_time_second`: double (dbl)
+-   `under_which_distraction_condition_did_you_record_reaction_time_third`: double (dbl)
+-   `under_which_distraction_condition_did_you_record_reaction_time_fourth`: double (dbl)
+-   `how_long_have_you_been_using_your_smartphone_in_months`: character (chr)
+-   `question`: character (chr)
+-   `which_statement_describes_your_environment_for_this_measurement`: character (chr)
+-   `are_you_indoors_or_outdoors`: character (chr)
+-   `how_many_hours_has_it_been_since_you_woke_up_this_morning`: character (chr)
+-   `how_many_hours_did_you_sleep_last_night`: character (chr)
+-   `what_is_the_noise_level_in_decibels`: character (chr)
+-   `what_is_the_light_quality_in..._ideal_ok_for_m`: character (chr)
+    -   Description: Rate the light quality in your testing environment (1-3)
+-   `how_tired_are_you_on_a_scale..._fresh_moderately`: character (chr)
+    -   Description: Tiredness Score (Samn-Perelli 7-pt scale)
+-   `what_is_your_mood..._but_manageable_neu`: character (chr)
+    -   Description: Mood Score (via mood questionnaire)
+-   `what_was_your_first_reaction_time_in_this_condition_1_4`: double (dbl)
+-   `what_was_your_second_reaction_time_in_this_condition_2_4`: character (chr)
+-   `what_was_your_third_reaction_time_in_this_condition_3_4`: double (dbl)
+-   `what_was_your_second_reaction_time_in_this_condition_4_4`: double (dbl)
+
+```{r, echo=FALSE, include=FALSE}
+glimpse(data)
+```
+
+## Data Cleaning
+
+In this analysis, the goal is to investigate the association between distraction levels and reaction times. As part of the data cleaning process, several variables that are not relevant to this objective are removed from the dataset:
+
+-   **Question 6**: This variable is entirely empty and was thus excluded.
+-   **Distraction Condition Variables**: The following variables were irrelevant and removed from the dataset:
+    -   `id`
+    -   `under_which_distraction_condition_did_you_record_reaction_time_first`
+    -   `under_which_distraction_condition_did_you_record_reaction_time_second`
+    -   `under_which_distraction_condition_did_you_record_reaction_time_third`
+    -   `under_which_distraction_condition_did_you_record_reaction_time_fourth`
+
+```{r, echo=FALSE}
+data <- data |>
+  select(-question) |>
+  select(-id) |>
+  select(-under_which_distraction_condition_did_you_record_reaction_time_first) |>
+  select(-under_which_distraction_condition_did_you_record_reaction_time_second) |>
+  select(-under_which_distraction_condition_did_you_record_reaction_time_third) |>
+  select(-under_which_distraction_condition_did_you_record_reaction_time_fourth)
+```
+
+Since some variable names are too long, I have renamed them to shorter versions for easier future analysis, and I will used my shortened variable names in my future analysis.
+
+```{r}
+data <- data |>
+  rename(
+    phone_using_time = how_long_have_you_been_using_your_smartphone_in_months,
+    environment = which_statement_describes_your_environment_for_this_measurement,
+    indoor_or_outdoor = are_you_indoors_or_outdoors,
+    hours_wake_up = how_many_hours_has_it_been_since_you_woke_up_this_morning,
+    hours_of_sleep = how_many_hours_did_you_sleep_last_night,
+    noise_level = what_is_the_noise_level_in_decibels,
+    light_quality = paste0("what_is_the_light_quality_in_your_testing_environment_",
+                           "poor_too_dim_or_too_harsh_uncomfortable_for_tasks_causes_",
+                           "strain_or_glare_adequate_light_is_acceptable_but_",
+                           "not_ideal_ok_for_m"),
+    tiredness_score = paste0("how_tired_are_you_on_a_scale_from_1_7_fully_alert_",
+                             "wide_awake_very_lively_responsive_but_not_at_peak_",
+                             "okay_somewhat_fresh_a_little_tired_less_than_fresh_",
+                             "moderately"),
+    mood_score = paste0("what_is_your_mood_very_negative_feeling_sad_anxious_",
+                        "or_upset_low_energy_difficulty_focusing_negative_",
+                        "feeling_somewhat_down_or_irritated_energy_is_low_but_",
+                        "manageable_neu"),
+    reaction_time_1 = what_was_your_first_reaction_time_in_this_condition_1_4,
+    reaction_time_2 = what_was_your_second_reaction_time_in_this_condition_2_4,
+    reaction_time_3 = what_was_your_third_reaction_time_in_this_condition_3_4,
+    reaction_time_4 = what_was_your_second_reaction_time_in_this_condition_4_4)
+
+```
+
+Some questions have answers written in different ways, and I will standardize them to ensure consistency in the analysis.
+
+For the `phone_using_time` variable, some data entries are not in numerical form but are written as '24 months' or '1 month'. I remove the words 'months' and 'month' to convert all entries into numerical values. The 64th column has a special input, '36 months (using my current smartphone)', so I chose to replace that input with 36 directly.
+
+```{r}
+data$phone_using_time[64] <- 36
+
+data <- data |> 
+  mutate(phone_using_time = gsub(" months", "", phone_using_time)) |>
+  mutate(phone_using_time = gsub(" month", "", phone_using_time))
+
+data$phone_using_time <- as.numeric(data$phone_using_time)
+```
+
+For the `indoor_or_outdoor` variable, there are entries such as 'indoor', 'indoors', 'Indoor', 'Indoors', 'outdoor', 'outdoors', 'Outdoor', and 'Outdoors'. I standardize these to 'indoors' and 'outdoors'.
+
+```{r}
+data <- data |>
+  mutate(indoor_or_outdoor = case_when(
+    indoor_or_outdoor %in% c("indoor", "indoors", "Indoor", "Indoors") ~ "indoors",
+    indoor_or_outdoor %in% c("outdoor", "outdoors", "Outdoor", "Outdoors") ~ "outdoors"))
+```
+
+For the `light_quality` variable, some responsers provided numeric levels, some used text descriptions, and there were also some typos. I standardized these into 1 for Poor, 2 for Adequate, and 3 for Excellent.
+
+```{r}
+data <- data |>
+  mutate(light_quality = case_when(
+    light_quality %in% c("Poor", 1) ~ 1,
+    light_quality %in% c("Adequate", "adequate", 2) ~ 2,
+    light_quality %in% c("Excellent", "excellent", "Excellemt", 3) ~ 3))
+```
+
+For the `tiredness_score` variable, some responsers provided numeric levels, some used text descriptions, and nobody reported 7. I standardized these into 1 for Fully alert, 2 for Very lively, 3 for Okay, and 6 for Extremely tired.
+
+```{r}
+data <- data |>
+  mutate(tiredness_score = case_when(
+    tiredness_score %in% c("Fully alert", "fully alert", "Fully", 1) ~ 1,
+    tiredness_score %in% c("Very", 2) ~ 2,
+    tiredness_score %in% c("Okay", 3) ~ 3,
+    tiredness_score %in% c(4) ~ 4,
+    tiredness_score %in% c(5) ~ 5,
+    tiredness_score %in% c("extremely tired", "extremely", "Extremely", 6) ~ 6,
+    tiredness_score %in% c(7) ~ 7))
+```
+
+For the `mood_score` variable, some students provided numeric levels, some used text descriptions. I standardize these into 1 for Very negative, 2 for Negative, 3 for Neutral, 4 for Positive.
+
+```{r}
+data <- data |>
+  mutate(mood_score = case_when(
+    mood_score %in% c("Very negative", "Very negstive", 1) ~ 1,
+    mood_score %in% c("negative", 2) ~ 2,
+    mood_score %in% c("Neutral", 3) ~ 3,
+    mood_score %in% c("Positive", 4) ~ 4,
+    mood_score %in% c(5) ~ 5))
+```
+
+For the `hours_wake_up`, `hours_of_sleep`, and `noise_level variables`, some data entries are not in numerical form but are written with units. I remove the words 'hour', 'hours', and 'dB' to convert all entries into numerical values.
+
+```{r}
+data <- data |>
+  mutate(hours_wake_up = gsub(" hours", "", hours_wake_up)) |>
+  mutate(hours_wake_up = gsub(" hour", "", hours_wake_up)) |>
+  mutate(hours_of_sleep = gsub(" hours", "", hours_of_sleep)) |>
+  mutate(noise_level = gsub(" dB", "", noise_level))
+
+data$hours_wake_up <- as.numeric(data$hours_wake_up)
+data$hours_of_sleep <- as.numeric(data$hours_of_sleep)
+data$noise_level <- as.numeric(data$noise_level)
+```
+
+For the `reaction_time_1`, `reaction_time_2`, `reaction_time_3`, and `reaction_time_4` variables, some responsers reported values greater than 100, likely due to a unit error. I divided those values by 1000 to ensure consistency across units. There are also some typos.
+
+```{r}
+data <- data |>
+  mutate(reaction_time_2 = gsub("\\.\\.", ".", reaction_time_2)) |>
+  mutate(reaction_time_1 = ifelse(as.numeric(reaction_time_1) > 10, 
+                                  as.numeric(reaction_time_1) / 1000, 
+                                  as.numeric(reaction_time_1))) |>
+  mutate(reaction_time_2 = ifelse(as.numeric(reaction_time_2) > 10, 
+                                  as.numeric(reaction_time_2) / 1000, 
+                                  as.numeric(reaction_time_2))) |>
+  mutate(reaction_time_3 = ifelse(as.numeric(reaction_time_3) > 10, 
+                                  as.numeric(reaction_time_3) / 1000, 
+                                  as.numeric(reaction_time_3))) |>
+  mutate(reaction_time_4 = ifelse(as.numeric(reaction_time_4) > 10, 
+                                  as.numeric(reaction_time_4) / 1000, 
+                                  as.numeric(reaction_time_4)))
+```
+
+After cleaning the data, let's take a look at the data again.
+
+```{r}
+glimpse(data)
+```
+
+### NA Values
+
+There are 1 missing value in `phone_using_time` variable, 1 missing value in `indoor_or_outdoor` variable, 1 missing value in `hours_wake_up` variable, 2 missing values in `noise_level` variable, 1 missing value in `light_quality` variable, 1 missing value in `mood_score` variable, 5 missing values in `reaction_time_1` variable, 4 missing values in `reaction_time_2` variable, 4 missing values in `reaction_time_3` variable, and 3 missing values in `reaction_time_4` variable.
+
+```{r, echo=FALSE, include=FALSE}
+sum(is.na(data$phone_using_time))
+sum(is.na(data$environment))
+sum(is.na(data$indoor_or_outdoor))
+sum(is.na(data$hours_wake_up))
+sum(is.na(data$hours_of_sleep))
+sum(is.na(data$noise_level))
+sum(is.na(data$light_quality))
+sum(is.na(data$tiredness_score))
+sum(is.na(data$mood_score))
+sum(is.na(data$reaction_time_1))
+sum(is.na(data$reaction_time_2))
+sum(is.na(data$reaction_time_3))
+sum(is.na(data$reaction_time_4))
+```
+
+### Outliers and Anomalies - There are some dubious values.
+
+I am keeping these potential outliers in the dataset for now, but I will exclude them in future correlation analysis.
+
+I noticed that some respondents reported `phone_using_time` (in months) greater than 96, which seems highly suspicious. This is likely because they misunderstood the questionnaire's question, interpreting it as how long ago they started using a smartphone, rather than how long they've been using their current smartphone.
+
+```{r}
+data |> filter(phone_using_time > 96) 
+```
+
+I noticed that one respondent reported `hours_wake_up` (in hours) as greater than 36, which seems highly suspicious. This may be a typo.
+
+```{r}
+data |> filter(hours_wake_up > 36)
+```
+
+Some respondents reported a `noise_level` of less than 15 dB, which is unlikely to occur in a typical environment.
+
+```{r}
+data |> filter(noise_level < 15)
+```
+
+## Descriptive Statistics
+
+```{r}
+summary(data$phone_using_time)
+hist(data$phone_using_time, main = "Histogram of Current Phone Using Time",
+     breaks = 20)
+```
+
+```{r}
+table(data$environment)
+```
+
+```{r}
+summary(data$hours_wake_up)
+hist(data$hours_wake_up, main = "Hours Since Wake Up",
+     breaks = 20)
+```
+
+```{r}
+summary(data$hours_of_sleep)
+hist(data$hours_of_sleep, main = "Hours of Sleeping")
+```
+
+```{r}
+summary(data$noise_level)
+hist(data$noise_level, main = "Noise Level (in decibels)", breaks = 20)
+```
+
+```{r}
+table(data$light_quality)
+```
+
+```{r}
+table(data$tiredness_score)
+```
+
+```{r}
+table(data$mood_score)
+```
+
+```{r}
+summary(data$reaction_time_1)
+```
+
+```{r}
+summary(data$reaction_time_2)
+```
+
+```{r}
+summary(data$reaction_time_3)
+```
+
+```{r}
+summary(data$reaction_time_4)
+```
+
+```{r}
+data$reaction_time_avg <- round((data$reaction_time_2 + 
+                                 data$reaction_time_3 + 
+                                 data$reaction_time_4) / 3, 3)
+summary(data$reaction_time_avg)
+hist(data$reaction_time_avg, main = "Average Reaction Time", breaks = 15)
+```
+
+### Correlation
+
+The matrix shows weak correlations across numeric variables, with the strongest correlation being between `reaction_time_avg` and `noise_level`.
+
+```{r}
+numerical_data <- data[c("reaction_time_avg", "phone_using_time", 
+                         "hours_wake_up", "hours_of_sleep", "noise_level")]
+cor(numerical_data, use = "complete.obs", method = "pearson")
+```
+
+## Data Visualization and Key Patterns
+
+Based on the scatter plot, there does not appear to be a clear pattern or relationship between phone usage time and reaction time.
+
+```{r}
+data1 <- data |> filter(phone_using_time <= 96)
+plot(data1$reaction_time_avg ~ data1$phone_using_time, xlab = "Current Phone Using Time (in months)",
+     ylab = "Reaction Time")
+```
+
+The boxplot reveals that reaction time in bustling areas is slower than in distraction-free areas, and reaction time while walking is slower than while standing. The reaction time in bustling areas shows greater variability compared to distraction-free areas. Similarly, reaction times while walking exhibit greater variability compared to standing.
+
+```{r}
+boxplot(data$reaction_time_avg ~ data$environment,
+        xlab = "Environment",
+        ylab = "Reaction Time",
+        cex.axis = 0.3)
+```
+
+From the boxplot, I believe there is no clear association between indoor or outdoor and reaction time.
+
+```{r}
+boxplot(data$reaction_time_avg ~ data$indoor_or_outdoor, xlab = "Indoor or Outdoor",
+        ylab = "Reaction Time")
+```
+
+From the scatter plot, we observe a slight positive relationship between the number of hours since waking up and reaction time. As the number of hours awake increases, reaction times tend to increase slightly, though the relationship is weak and the data points are still widely scattered.
+
+```{r}
+data2 <- data |> filter(hours_wake_up <= 36)
+plot(data2$reaction_time_avg ~ data2$hours_wake_up, xlab = "Hours Since Wake Up", 
+     ylab = "Reaction Time")
+```
+
+From the scatterplot, I believe there is no clear association between hours of sleeping and reaction time.
+
+```{r}
+plot(data$reaction_time_avg ~ data$hours_of_sleep, xlab = "Hours of Sleeping", 
+     ylab = "Reaction Time")
+```
+
+From the scatter plot, we observe a moderate positive relationship between noise level and reaction time. As noise levels increase, reaction times tend to rise, indicating that higher noise levels may be associated with slower reaction times.
+
+```{r}
+data3 <- data |> filter(noise_level >= 15)
+plot(data3$reaction_time_avg ~ data3$noise_level, xlab = "Noise Level (in dicebels)",
+     ylab = "Reaction Time")
+```
+
+From the boxplot, we observe that poorer light quality is associated with slower reaction times. As light quality improves, reaction times tend to decrease, with smaller interquartile ranges, indicating more consistent and faster reaction times in better lighting conditions.
+
+```{r}
+boxplot(data$reaction_time_avg ~ data$light_quality, xlab = "Light Quality",
+        ylab = "Reaction Time")
+```
+
+From this boxplot, we observe that lower tiredness scores are associated with faster reaction times. Furthermore, the variability of reaction times appears to increase for lower tiredness score, indicating that participants with lower tiredness scores exhibit greater variability in their reaction times.
+
+```{r}
+boxplot(data$reaction_time_avg ~ data$tiredness_score, xlab = "Tiredness Score",
+        ylab = "Reaction Time")
+```
+
+From this boxplot, we observe no clear association between mood scores and reaction times, as the median reaction times remain relatively consistent across different mood scores. However, the variability of reaction times appears to increase for higher mood scores, indicating that participants with higher mood scores exhibit greater variability in their reaction times.
+
+```{r}
+boxplot(data$reaction_time_avg ~ data$mood_score, xlab = "Mood Score", 
+        ylab = "Reaction Time")
+```
